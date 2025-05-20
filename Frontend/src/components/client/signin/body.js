@@ -5,10 +5,31 @@ import { Input } from "@nextui-org/react";
 import { RiSparklingLine } from "@remixicon/react";
 import { useState } from "react";
 
+
 function Body({ type, fn }) {
-  const useState = [];
+  // State to manage the credentials
+  const [credentials, setCredentials] = useState({});
+
+  // Sending the data to the backend
+  const handleSubmit = async () => {
+    console.log(credentials);
+    
+    const url = type === "default" ? "http://localhost:8000/api/auth/passwordless" : "http://localhost:8000/api/auth/workspace";
+
+    const response = await fetch("http://localhost:8000/api/auth/passwordless", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(credentials),
+    });
+
+    const result = await response.json();
+  }
 
   let body;
+
+  // Determine the body content based on the type of sign-in
   if (type === "default") {
     body = (
       <div className="flex flex-col w-3/6 mt-8 space-y-4">
@@ -66,8 +87,7 @@ function Body({ type, fn }) {
             OR
           </p>
         </div>
-        <Input placeholder="name@work-email.com" name="email" />
-        <CustomButton variant="solid" text="Sign In With Email" />
+        <Input placeholder="name@work-email.com" type="email" validate={(value) => /\S+@\S+\.\S+/.test(value)} onChange={(e) => {setCredentials({"email": e.target.value})}} />        <CustomButton variant="solid" text="Sign In With Email" fn={handleSubmit}/>
         <div className="bg-gray-200 text-gray-500 p-5 flex space-x-3 rounded-xl">
           <i>
             <RiSparklingLine />
@@ -178,6 +198,13 @@ function Body({ type, fn }) {
         <CustomButton variant="solid" text="Continue" />
       </div>
     );
+  } else if (type === "login") {
+    body = (
+      <div className="flex flex-col w-3/6 mt-8 space-y-4">
+        <Input placeholder="" />
+        <CustomButton variant="solid" text="Submit" />
+        </div>
+    )
   }
 
   return body;

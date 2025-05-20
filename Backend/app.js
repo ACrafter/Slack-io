@@ -3,6 +3,7 @@ import Fastify from "fastify";
 import dotenv from "dotenv";
 import autoload from "@fastify/autoload";
 // import fastifyMultipart from "@fastify/multipart";
+import fastifyCors from "@fastify/cors";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
@@ -23,6 +24,12 @@ const fastify = Fastify({
 //   attachFieldsToBody: true,
 //   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
 // });
+
+fastify.register(fastifyCors, {
+  origin: true, // Allow all origins (for development purposes only, restrict in production)
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+});
 
 await fastify.register(autoload, {
   dir: join(__dirname, "src/plugins"),

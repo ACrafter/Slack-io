@@ -4,6 +4,7 @@ import { useState } from "react";
 import Body from "@/components/client/signin/body";
 
 function Signin() {
+  // State to manage the type of sign-in (passwordless, workspace, or phone)
   const [type, setType] = useState("default");
 
   return (
