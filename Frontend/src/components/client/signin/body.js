@@ -1,5 +1,5 @@
 "use client";
-
+import React from 'react'
 import CustomButton from "@/components/common/CustomButton";
 import { Input } from "@nextui-org/react";
 import { RiSparklingLine } from "@remixicon/react";
@@ -9,14 +9,28 @@ import { useState } from "react";
 function Body({ type, fn }) {
   // State to manage the credentials
   const [credentials, setCredentials] = useState({});
+  const [loginCode, setLoginCode] = useState("");
+  const [userCode, setUserCode] = useState(["", "", "", "", "", ""]);
+  const [emailError, setEmailError] = useState(""); // Add this line
+
+
 
   // Sending the data to the backend
   const handleSubmit = async () => {
-    console.log(credentials);
-    
-    const url = type === "default" ? "http://localhost:8000/api/auth/passwordless" : "http://localhost:8000/api/auth/workspace";
 
-    const response = await fetch("http://localhost:8000/api/auth/passwordless", {
+    const email = credentials.email;
+    if (!email || !/\S+@\S+\.\S+/.test(email)) {
+      setEmailError("Please enter a valid email address.");
+      return;
+    }
+
+    setEmailError("");
+
+    fn("login");
+
+
+    // const url = type === "default" ? "http://localhost:8000/api/user/passwordless" : "http://localhost:8000/api/auth/workspace";
+    const response = await fetch("http://localhost:8000/api/user/passwordless", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -25,6 +39,42 @@ function Body({ type, fn }) {
     });
 
     const result = await response.json();
+    setLoginCode(result.loginCode);    
+  }
+
+  const handleLogin = async () => {
+
+    // Join the code array into a string
+    if (userCode.length !== 6) {
+      setEmailError("Please enter a 6-digit code.");
+      return;
+    }
+
+    const code = userCode.join("");
+
+    // Validate the login code
+    if (loginCode != code) {
+      setEmailError("Please enter the correct 6-digit code.");
+      return;
+    }
+    setEmailError("");
+    // Send the login code to the backend
+    const response = await fetch("http://localhost:8000/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email: credentials.email, loginCode }),
+    });
+    const result = await response.json();
+    if (result.success) { 
+      // Handle successful login
+      console.log("Login successful:", result);
+    } else {
+      // Handle login error 
+      console.error("Login failed:", result.message);
+      // setEmailError(result.message || "Login failed. Please try again.");
+    }
   }
 
   let body;
@@ -87,7 +137,11 @@ function Body({ type, fn }) {
             OR
           </p>
         </div>
-        <Input placeholder="name@work-email.com" type="email" validate={(value) => /\S+@\S+\.\S+/.test(value)} onChange={(e) => {setCredentials({"email": e.target.value})}} />        <CustomButton variant="solid" text="Sign In With Email" fn={handleSubmit}/>
+        <Input placeholder="name@work-email.com" type="email" onChange={(e) => {setCredentials({"email": e.target.value})}} />
+          {emailError && (
+            <span className="text-red-500 text-xs">{emailError}</span>
+          )}
+        <CustomButton variant="solid" text="Sign In With Email" fn={handleSubmit}/>
         <div className="bg-gray-200 text-gray-500 p-5 flex space-x-3 rounded-xl">
           <i>
             <RiSparklingLine />
@@ -199,14 +253,70 @@ function Body({ type, fn }) {
       </div>
     );
   } else if (type === "login") {
+    // State for 6-digit code
+    const inputs = [];
+
+    // Handler for input change
+    const handleCodeChange = (e, idx) => {
+      const val = e.target.value.replace(/[^0-9]/g, "").slice(0, 1);
+      const newCode = [...userCode];
+      newCode[idx] = val;
+      setUserCode(newCode);
+
+      // Move to next input if value entered
+      if (val && idx < 5) {
+        inputs[idx + 1]?.focus();
+      }
+    };
+
+    // Handler for backspace to move focus back
+    const handleKeyDown = (e, idx) => {
+      if (e.key === "Backspace" && !userCode[idx] && idx > 0) {
+        inputs[idx - 1]?.focus();
+      }
+    };
+
     body = (
       <div className="flex flex-col w-3/6 mt-8 space-y-4">
-        <Input placeholder="" />
-        <CustomButton variant="solid" text="Submit" />
+        <h1 className="text-2xl font-semibold mb-4">
+          <RiSparklingLine className="inline" /> Enter Your Login Code
+        </h1>
+        <div className="flex space-x-2 justify-center">
+          {[...Array(6)].map((_, idx) => (
+            <Input
+              key={idx}
+              ref={el => inputs[idx] = el}
+              maxLength={1}
+              value={userCode[idx]}
+              onChange={e => handleCodeChange(e, idx)}
+              onKeyDown={e => handleKeyDown(e, idx)}
+              className="w-12 text-center text-xl"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+            />
+          ))}
         </div>
-    )
+                  {
+            /* Display error message if loginCode is not set or does not match */
+            emailError && (
+              <span className="text-red-500 text-xs mt-2">
+                {emailError}
+              </span>
+            )
+          }
+        <CustomButton variant="solid" text="Submit" fn={() => {handleLogin()}}/>
+        <CustomButton 
+        variant="solid" 
+        text="Go Back" 
+        fn={() => {console.log('Go Back');
+          setUserCode(["", "", "", "", "", ""]);
+          setLoginCode("");
+         fn('default')}}
+         />
+      </div>
+    );
   }
-
   return body;
 }
 

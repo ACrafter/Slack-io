@@ -13,7 +13,6 @@ export const createUserByEmail = async function (request, reply) {
   const email = request.body.email;
 
   const result = await sql`SELECT * FROM users WHERE email=${email}`;
-  console.log(result);
 
   if (result.length) {
     try {
@@ -26,7 +25,16 @@ export const createUserByEmail = async function (request, reply) {
                 WHERE email = ${email}
                 `;
 
-      reply.send({ success: true, newUser: false });
+      const mailOptions = {
+        from: process.env.EMAIL,
+        to: email,
+        subject: "Your Login Code",
+        text: `Your login code is ${loginCode}. It will expire in 10 minutes.`,
+      };
+      
+      // await transporter.sendMail(mailOptions);
+
+      reply.send({ success: true, newUser: false, loginCode });
     } catch (error) {
       reply.code(500).send({ error: error.message });
     }
@@ -40,7 +48,16 @@ export const createUserByEmail = async function (request, reply) {
         (${email}, ${loginCode}, ${(Date.now() + 600000).toString()})
     `;
 
-      reply.send({ success: true, newUser: true });
+      const mailOptions = {
+        from: process.env.EMAIL,
+        to: email,
+        subject: "Your Login Code",
+        text: `Your login code is ${loginCode}. It will expire in 10 minutes.`,
+      };
+      
+      // await transporter.sendMail(mailOptions);
+
+      reply.send({ success: true, newUser: true, loginCode });
     } catch (error) {
       reply.code(500).send({ error: error.message });
     }

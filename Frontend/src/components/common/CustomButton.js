@@ -9,7 +9,7 @@ function CustomButton({ text, variant, components, icon, fn }) {
       variant={variant}
       size="md"
       radius="small"
-      onClick={fn}
+      onPress={fn}
     >
       {icon} {text} {components}
     </Button>
