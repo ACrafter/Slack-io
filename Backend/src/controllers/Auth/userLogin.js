@@ -11,9 +11,7 @@ export const userLogin = async function (request, reply) {
       AND pass_code_expiry > ${Date.now()}
     `;
 
-    console.log(result);
     
-
     if (result.length) {
       reply.send({ success: true, message: "Login successful" });
     } else {

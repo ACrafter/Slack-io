@@ -1,4 +1,5 @@
 "use client";
+
 import React from 'react'
 import CustomButton from "@/components/common/CustomButton";
 import { Input } from "@nextui-org/react";
@@ -11,11 +12,10 @@ function Body({ type, fn }) {
   const [credentials, setCredentials] = useState({});
   const [loginCode, setLoginCode] = useState("");
   const [userCode, setUserCode] = useState(["", "", "", "", "", ""]);
-  const [emailError, setEmailError] = useState(""); // Add this line
+  const [emailError, setEmailError] = useState(""); 
 
 
-
-  // Sending the data to the backend
+  // Sending the login request to the backend
   const handleSubmit = async () => {
 
     const email = credentials.email;
@@ -42,6 +42,7 @@ function Body({ type, fn }) {
     setLoginCode(result.loginCode);    
   }
 
+  // Function to handle login with the 6-digit code
   const handleLogin = async () => {
 
     // Join the code array into a string
