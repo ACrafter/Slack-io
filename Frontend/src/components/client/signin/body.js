@@ -5,6 +5,9 @@ import CustomButton from "@/components/common/CustomButton";
 import { Input } from "@nextui-org/react";
 import { RiSparklingLine } from "@remixicon/react";
 import { useState } from "react";
+import { useContext } from "react";
+import { AuthContext } from "../../../contexts/AuthContext";
+
 
 
 function Body({ type, fn }) {
@@ -13,6 +16,7 @@ function Body({ type, fn }) {
   const [loginCode, setLoginCode] = useState("");
   const [userCode, setUserCode] = useState(["", "", "", "", "", ""]);
   const [emailError, setEmailError] = useState(""); 
+  const { login, user } = useContext(AuthContext);
 
 
   // Sending the login request to the backend
@@ -59,22 +63,24 @@ function Body({ type, fn }) {
       return;
     }
     setEmailError("");
-    // Send the login code to the backend
-    const response = await fetch("http://localhost:8000/api/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email: credentials.email, loginCode }),
-    });
-    const result = await response.json();
-    if (result.success) { 
-      // Handle successful login
-      console.log("Login successful:", result);
+
+    // useAuth context to perform login
+    const email = credentials.email;
+    if (!email || !/\S+@\S+\.\S+/.test(email)) {
+      setEmailError("Please enter a valid email address.");
+      return;
+    }
+    setEmailError("");
+    console.log("Logging in with email:", email, "and code:", loginCode);
+    login(email, code);
+
+    // Redirect to the home page after successful login
+    if(user && user.email) {
+      console.log("User is logged in:", user.email);
+      // window.location.href = "/home";
     } else {
-      // Handle login error 
-      console.error("Login failed:", result.message);
-      // setEmailError(result.message || "Login failed. Please try again.");
+      console.error("User is not logged in or email is not available.");
+      setEmailError("Login failed. Please try again.");
     }
   }
 

@@ -118,7 +118,7 @@ const NavbarManager = () => {
               color="secondary"
               size="md"
               variant="bordered"
-              onClick={() => setSearch(false)}
+              onPress={() => setSearch(false)}
             >
               Back
             </Button>

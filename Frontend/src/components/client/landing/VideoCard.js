@@ -14,7 +14,7 @@ function VideoCard(props) {
               type="video/webm"
             />
           </video>
-          <div className="flex flex-col space-y-5 justify-center max-w-[30rem] mr-8">
+          <div className="flex flex-col space-y-5 justify-center max-w-[30rem] ml-8">
             <h2 className="text-4xl poppins-extrabold">{props.title}</h2>
             <p className="font-medium">{props.desc}</p>
             <Link href={props.path}>

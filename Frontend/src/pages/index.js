@@ -46,7 +46,7 @@ function index() {
           muted
           playsInline
           height="544"
-          width="900"
+          width="1000"
           className="rounded-md"
         >
           <source src="/intro-video.webm" type="video/webm" />
